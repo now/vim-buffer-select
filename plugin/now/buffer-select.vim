@@ -1,7 +1,3 @@
-" Vim plugin file
-" Maintainer:	    Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-09-19
-
 if exists('loaded_plugin_now_buffer_select')
   finish
 endif
@@ -12,15 +8,15 @@ set cpo&vim
 
 let s:trying_to_delete_buffer = 0
 
-function s:buffer_leave()
+function! s:buffer_leave()
   if s:trying_to_delete_buffer
     return
   endif
 
-  augroup buffer-select
+  augroup plugin-now-buffer-select
     autocmd!
   augroup end
-  augroup! buffer-select
+  augroup! plugin-now-buffer-select
 
   let _ = s:buffers_window.buffer().delete()
   let s:buffers_window = g:now#vim#window#null
@@ -36,7 +32,7 @@ let s:buffers_window = now#vim#window#null()
 
 let s:mru = []
 
-function s:display_buffer_list()
+function! s:display_buffer_list()
   if !s:buffers_window.closed
     call s:buffers_window.activate()
     return
@@ -49,7 +45,8 @@ function s:display_buffer_list()
 
   call s:rebuild_buffer_list()
 
-  augroup buffer-select
+  augroup plugin-now-buffer-select
+    autocmd!
     autocmd BufDelete * silent call <SID>rebuild_buffer_list()
     autocmd BufLeave <buffer> silent call <SID>buffer_leave()
   augroup end
@@ -59,7 +56,7 @@ function s:display_buffer_list()
   call cursor(2, 1)
 endfunction
 
-function s:rebuild_buffer_list()
+function! s:rebuild_buffer_list()
   setlocal modifiable
 
   let saved_pos = getpos('.')
@@ -95,7 +92,7 @@ function s:rebuild_buffer_list()
   setlocal nomodifiable
 endfunction
 
-function s:setup_syntax()
+function! s:setup_syntax()
   if !has('syntax')
     return
   endif
@@ -105,7 +102,7 @@ function s:setup_syntax()
 "  hi def link buffersPath Directory
 endfunction
 
-function s:setup_mappings()
+function! s:setup_mappings()
   let i = 0
   while i < line('$')
     execute 'noremap <buffer> <silent>' i
@@ -118,23 +115,23 @@ function s:setup_mappings()
   noremap <buffer> <silent> d :call <SID>delete_buffer_line()<CR>
 endfunction
 
-function s:select_buffer_nr(nr)
+function! s:select_buffer_nr(nr)
   call s:select_buffer_lnum(a:nr)
 endfunction
 
-function s:select_buffer_line()
+function! s:select_buffer_line()
   call s:select_buffer_lnum(line('.'))
 endfunction
 
-function s:select_buffer_lnum(lnum)
+function! s:select_buffer_lnum(lnum)
   call s:select_buffer(s:get_buffer_from_line(a:lnum))
 endfunction
 
-function s:get_buffer_from_line(lnum)
+function! s:get_buffer_from_line(lnum)
   return s:mru[a:lnum - 1]
 endfunction
 
-function s:select_buffer(buffer)
+function! s:select_buffer(buffer)
   " TODO: This probably “can’t” happen…nonetheless it may be worth keeping
   " around.
   if !a:buffer.exists()
@@ -151,11 +148,11 @@ function s:select_buffer(buffer)
   endif
 endfunction
 
-function s:delete_buffer_line()
+function! s:delete_buffer_line()
   call s:delete_buffer(s:get_buffer_from_line(line('.')))
 endfunction
 
-function s:delete_buffer(buffer)
+function! s:delete_buffer(buffer)
   try
     " TODO: What a mess, but there are a bunch of edge cases here and the
     " problem is that I really don’t like it that all windows showing a buffer
@@ -191,3 +188,4 @@ function s:delete_buffer(buffer)
 endfunction
 
 let &cpo = s:cpo_save
+unlet s:cpo_save
